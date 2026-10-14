@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Upload Result — AI Project Advisor{% endblock %}
+
+{% block content %}
+<h1>Upload Complete</h1>
+<p class="subtitle">Project: <strong>{{ project_id }}</strong></p>
+
+<div class="card">
+  <h2>Processing Results</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Status</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.name }}</td>
+        <td>
+          {% if r.status == 'success' %}
+            <span class="badge badge-green">✓ Indexed</span>
+          {% else %}
+            <span class="badge" style="background:#fde8e8; color:#7b2a2a;">✗ Error</span>
+          {% endif %}
+        </td>
+        <td style="font-size:.85rem; color: {{ '#2e6b4a' if r.status == 'success' else '#7b2a2a' }};">
+          {{ r.message }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+  <a href="{{ url_for('upload') }}?project_id={{ project_id }}" class="btn btn-primary">Upload More</a>
+  <a href="{{ url_for('search_kb') }}?project_id={{ project_id }}" class="btn btn-outline">Search Knowledge Base</a>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+</div>
+{% endblock %}

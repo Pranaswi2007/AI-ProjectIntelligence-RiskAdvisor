@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AI Project Advisor{% endblock %}
+
+{% block content %}
+<h1>Project Dashboard</h1>
+<p class="subtitle">Overview of all projects in the knowledge base.</p>
+
+<!-- Summary stats -->
+<div class="stats-row">
+  <div class="stat-chip">
+    <div class="label">Projects</div>
+    <div class="value">{{ projects | length }}</div>
+  </div>
+  <div class="stat-chip">
+    <div class="label">Documents Indexed</div>
+    <div class="value">{{ total_docs }}</div>
+  </div>
+  <div class="stat-chip">
+    <div class="label">Total Chunks</div>
+    <div class="value">{{ total_chunks }}</div>
+  </div>
+</div>
+
+<!-- Quick-action buttons -->
+<div style="display:flex; gap:.75rem; margin-bottom:1.8rem; flex-wrap:wrap;">
+  <a href="{{ url_for('upload') }}" class="btn btn-primary">＋ Upload Documents</a>
+  <a href="{{ url_for('search_kb') }}" class="btn btn-outline">🔍 Search Knowledge Base</a>
+</div>
+
+{% if projects %}
+  <h2>Projects</h2>
+  {% for p in projects %}
+  <div class="card">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+      <div>
+        <h3>{{ p.name }}</h3>
+        <div style="margin-top:.3rem; color:#6b7280; font-size:.82rem;">
+          ID: <code>{{ p.id }}</code>
+        </div>
+      </div>
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.2rem;">
+        <span class="badge badge-blue">{{ p.document_count }} doc{{ 's' if p.document_count != 1 }}</span>
+        <span class="badge badge-gray">{{ p.chunk_count }} chunks</span>
+      </div>
+    </div>
+
+    {% if p.sources %}
+    <div style="margin-top:1rem;">
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Chunks</th>
+            <th style="width:130px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for filename, count in p.sources.items() %}
+          <tr>
+            <td>{{ filename }}</td>
+            <td><span class="badge badge-gray">{{ count }}</span></td>
+            <td>
+              <a href="{{ url_for('search_kb') }}?project_id={{ p.id }}" class="btn btn-outline" style="font-size:.78rem; padding:.3rem .7rem;">Search</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:1rem; display:flex; gap:.75rem; flex-wrap:wrap;">
+      <a href="{{ url_for('upload') }}?project_id={{ p.id }}" class="btn btn-success" style="font-size:.82rem;">Upload more</a>
+      <a href="{{ url_for('knowledge_base') }}?project_id={{ p.id }}" class="btn btn-outline" style="font-size:.82rem;">Manage KB</a>
+      <a href="{{ url_for('search_kb') }}?project_id={{ p.id }}" class="btn btn-outline" style="font-size:.82rem;">Search</a>
+    </div>
+  </div>
+  {% endfor %}
+
+{% else %}
+  <div class="empty">
+    <div class="icon">📂</div>
+    <p>No projects yet. Upload some documents to get started.</p>
+    <br>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload Documents</a>
+  </div>
+{% endif %}
+{% endblock %}

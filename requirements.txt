@@ -1,0 +1,16 @@
+# Web framework
+flask==3.0.3
+
+# Document loaders
+pdfplumber==0.11.4
+python-docx==1.1.2
+pandas==2.2.2
+openpyxl==3.1.5          # pandas xlsx support
+
+# RAG pipeline
+langchain-text-splitters==0.2.4
+sentence-transformers==3.1.1
+chromadb==0.5.15
+
+# Utilities
+Werkzeug==3.0.4           # bundled with Flask, pinned for security

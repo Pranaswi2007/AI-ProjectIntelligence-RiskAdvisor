@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Base — AI Project Advisor{% endblock %}
+
+{% block content %}
+<h1>Knowledge Base</h1>
+<p class="subtitle">Browse and manage indexed documents across your projects.</p>
+
+<!-- Project selector -->
+<div class="card" style="max-width:480px;">
+  <form method="GET" style="display:flex; gap:.75rem; align-items:flex-end;">
+    <div class="form-group" style="flex:1; margin-bottom:0;">
+      <label for="project_id">Select Project</label>
+      <select name="project_id" id="project_id">
+        <option value="">— choose a project —</option>
+        {% for p in projects %}
+          <option value="{{ p.id }}" {{ 'selected' if p.id == selected_project }}>
+            {{ p.name }} ({{ p.document_count }} docs)
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-bottom:0; height:38px;">View</button>
+  </form>
+</div>
+
+{% if selected_project %}
+  {% if sources %}
+    <div class="card">
+      <h2>Indexed Files — {{ selected_project }}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Chunks</th>
+            <th style="width:160px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for filename, count in sources.items() %}
+          <tr>
+            <td>{{ filename }}</td>
+            <td><span class="badge badge-blue">{{ count }}</span></td>
+            <td>
+              <div style="display:flex; gap:.4rem; align-items:center;">
+                <a href="{{ url_for('search_kb') }}?project_id={{ selected_project }}"
+                   class="btn btn-outline" style="font-size:.78rem; padding:.3rem .65rem;">
+                  Search
+                </a>
+                <form method="POST" action="{{ url_for('kb_delete') }}"
+                      onsubmit="return confirm('Remove {{ filename }} from the knowledge base?');"
+                      style="margin:0;">
+                  <input type="hidden" name="project_id" value="{{ selected_project }}" />
+                  <input type="hidden" name="filename"   value="{{ filename }}" />
+                  <button type="submit" class="btn btn-danger">Remove</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
+      <a href="{{ url_for('upload') }}?project_id={{ selected_project }}" class="btn btn-primary">Upload More</a>
+      <a href="{{ url_for('search_kb') }}?project_id={{ selected_project }}" class="btn btn-outline">Search This Project</a>
+    </div>
+
+  {% else %}
+    <div class="empty">
+      <div class="icon">📭</div>
+      <p>No documents indexed for <strong>{{ selected_project }}</strong> yet.</p>
+      <br>
+      <a href="{{ url_for('upload') }}?project_id={{ selected_project }}" class="btn btn-primary">Upload Documents</a>
+    </div>
+  {% endif %}
+
+{% elif not projects %}
+  <div class="empty">
+    <div class="icon">📂</div>
+    <p>No projects found. Start by uploading some documents.</p>
+    <br>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload Documents</a>
+  </div>
+{% endif %}
+{% endblock %}

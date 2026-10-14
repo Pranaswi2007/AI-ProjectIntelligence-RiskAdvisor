@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Search — AI Project Advisor{% endblock %}
+
+{% block content %}
+<h1>Search Knowledge Base</h1>
+<p class="subtitle">Ask any question — results are grounded in your uploaded documents.</p>
+
+<!-- Search form -->
+<div class="card" style="max-width:720px;">
+  <form method="POST" action="{{ url_for('search_kb') }}">
+
+    <div class="form-group">
+      <label for="project_id">Project</label>
+      <select name="project_id" id="project_id" required>
+        <option value="">— choose a project —</option>
+        {% for p in projects %}
+          <option value="{{ p.id }}" {{ 'selected' if p.id == selected_project else '' }}>
+            {{ p.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="query">Your Query</label>
+      <input
+        type="text"
+        id="query"
+        name="query"
+        placeholder="e.g. What are the key project deliverables?"
+        value="{{ query | e }}"
+        required
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="form-group" style="max-width:200px;">
+      <label for="k">Results to retrieve</label>
+      <select name="k" id="k">
+        {% for n in [3, 5, 7, 10] %}
+          <option value="{{ n }}" {{ 'selected' if n == k else '' }}>{{ n }} chunks</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">🔍 Search</button>
+  </form>
+</div>
+
+<!-- Results section -->
+{% if results %}
+  <h2 style="margin-bottom:.8rem;">
+    {{ results | length }} result{{ 's' if results | length != 1 else '' }} for
+    <em>"{{ query | e }}"</em>
+  </h2>
+
+  {% for r in results %}
+  <div class="result-card">
+    <div class="result-meta">
+      <span>📄 {{ r.source }}</span>
+      <span>Chunk #{{ r.chunk_index }}</span>
+      <span class="score-badge">relevance {{ r.score }}</span>
+    </div>
+    <div class="result-text">{{ r.text }}</div>
+  </div>
+  {% endfor %}
+
+{% elif query and not results %}
+  {#
+    Flash messages (no results, error, empty index) are already shown
+    by base.html above the page content. Show an additional inline hint
+    only when search ran but came back empty (no flash category covers this
+    path without duplication).
+  #}
+
+{% else %}
+  <div class="empty">
+    <div class="icon">🔍</div>
+    <p>Select a project, enter a query, and click <strong>Search</strong>.</p>
+    {% if not projects %}
+    <br>
+    <p style="color:#b85c5c; font-size:.88rem;">
+      No projects found. <a href="{{ url_for('upload') }}">Upload documents</a> first.
+    </p>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

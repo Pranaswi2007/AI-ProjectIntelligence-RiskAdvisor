@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}AI Project Advisor{% endblock %}</title>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+      background: #f4f6f9;
+      color: #374151;
+      min-height: 100vh;
+    }
+
+    a { color: #5b7fa6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ────────────────────────────────────────────────── */
+    nav {
+      background: #2c4a6e;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 56px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    }
+
+    nav .brand {
+      color: #e8eef5;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+
+    nav .brand span { color: #93bde0; }
+
+    nav ul {
+      display: flex;
+      gap: .25rem;
+      list-style: none;
+      margin-left: auto;
+    }
+
+    nav ul a {
+      display: block;
+      padding: .45rem .9rem;
+      border-radius: 6px;
+      color: #c8d9ec;
+      font-size: .88rem;
+      transition: background .15s, color .15s;
+    }
+
+    nav ul a:hover,
+    nav ul a.active {
+      background: #3d6491;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    /* ── Page wrapper ───────────────────────────────────────── */
+    .page { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    h1 { font-size: 1.55rem; font-weight: 600; color: #1e3a5f; margin-bottom: .3rem; }
+    h2 { font-size: 1.2rem;  font-weight: 600; color: #2c4a6e; margin-bottom: 1rem; }
+    h3 { font-size: 1rem;    font-weight: 600; color: #374151; }
+
+    .subtitle { color: #6b7280; font-size: .88rem; margin-bottom: 1.6rem; }
+
+    /* ── Cards ──────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-radius: 10px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1.4rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    /* ── Stat chips (dashboard) ─────────────────────────────── */
+    .stats-row {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.8rem;
+    }
+
+    .stat-chip {
+      background: #eaf1fb;
+      border: 1px solid #c4d7ef;
+      border-radius: 10px;
+      padding: .9rem 1.4rem;
+      min-width: 150px;
+      flex: 1;
+    }
+
+    .stat-chip .label { font-size: .78rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-chip .value { font-size: 1.7rem; font-weight: 700; color: #2c4a6e; line-height: 1.2; }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn {
+      display: inline-block;
+      padding: .5rem 1.2rem;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 500;
+      transition: opacity .15s, filter .15s;
+    }
+
+    .btn:hover { opacity: .88; }
+    .btn-primary  { background: #3d6491; color: #fff; }
+    .btn-success  { background: #4a8c6e; color: #fff; }
+    .btn-danger   { background: #b85c5c; color: #fff; font-size: .8rem; padding: .35rem .8rem; }
+    .btn-outline  { background: transparent; border: 1.5px solid #5b7fa6; color: #5b7fa6; }
+
+    /* ── Forms ──────────────────────────────────────────────── */
+    .form-group { margin-bottom: 1.1rem; }
+    label       { display: block; font-size: .85rem; font-weight: 500; margin-bottom: .35rem; color: #374151; }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: .5rem .75rem;
+      border: 1.5px solid #c9d4e3;
+      border-radius: 7px;
+      font-size: .92rem;
+      color: #374151;
+      background: #fafcff;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus { border-color: #5b7fa6; background: #fff; }
+
+    /* ── File drop zone ─────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #9ab4d0;
+      border-radius: 10px;
+      background: #f0f5fb;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      color: #5b7fa6;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      background: #e2ecf8;
+      border-color: #4a7ab5;
+    }
+
+    .drop-zone input[type="file"] {
+      display: none;
+    }
+
+    .drop-zone .icon { font-size: 2.2rem; margin-bottom: .5rem; }
+    .drop-zone .hint { font-size: .82rem; color: #7a90a8; margin-top: .4rem; }
+
+    /* ── Flash messages ─────────────────────────────────────── */
+    .flash-list { list-style: none; margin-bottom: 1.2rem; }
+
+    .flash {
+      padding: .7rem 1rem;
+      border-radius: 7px;
+      margin-bottom: .5rem;
+      font-size: .88rem;
+    }
+
+    .flash.success { background: #e6f4ee; color: #2e6b4a; border-left: 4px solid #4a8c6e; }
+    .flash.error   { background: #fdecea; color: #7b2a2a; border-left: 4px solid #b85c5c; }
+    .flash.info    { background: #e8f0fb; color: #2c4a6e; border-left: 4px solid #5b7fa6; }
+
+    /* ── Table ──────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    th { background: #eaf1fb; color: #2c4a6e; padding: .6rem 1rem; text-align: left; font-weight: 600; }
+    td { padding: .6rem 1rem; border-bottom: 1px solid #e8edf5; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f7faff; }
+
+    /* ── Search result cards ────────────────────────────────── */
+    .result-card {
+      background: #fff;
+      border: 1px solid #dde3ed;
+      border-left: 4px solid #5b7fa6;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: .78rem;
+      color: #6b7280;
+      margin-bottom: .55rem;
+    }
+
+    .score-badge {
+      display: inline-block;
+      background: #dceefa;
+      color: #1e3a5f;
+      border-radius: 20px;
+      padding: .15rem .6rem;
+      font-size: .76rem;
+      font-weight: 600;
+    }
+
+    .result-text {
+      font-size: .88rem;
+      line-height: 1.6;
+      color: #374151;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ── Badge ──────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: .15rem .55rem;
+      border-radius: 20px;
+      font-size: .74rem;
+      font-weight: 600;
+    }
+
+    .badge-blue  { background: #dceefa; color: #1e3a5f; }
+    .badge-green { background: #d9f0e6; color: #1e4a31; }
+    .badge-gray  { background: #e8edf5; color: #4b5563; }
+
+    /* ── Empty state ────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #9ca3af;
+    }
+
+    .empty .icon { font-size: 2.5rem; }
+    .empty p { margin-top: .6rem; font-size: .9rem; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      nav { gap: .75rem; padding: 0 1rem; }
+      nav .brand { font-size: .9rem; }
+      .page { padding: 0 1rem; }
+      .stats-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">⚙ AI Project <span>Advisor</span></div>
+  <ul>
+    <li><a href="{{ url_for('dashboard') }}"    class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a></li>
+    <li><a href="{{ url_for('upload') }}"       class="{{ 'active' if request.endpoint == 'upload' }}">Upload</a></li>
+    <li><a href="{{ url_for('knowledge_base') }}" class="{{ 'active' if request.endpoint == 'knowledge_base' }}">Knowledge Base</a></li>
+    <li><a href="{{ url_for('search_kb') }}"   class="{{ 'active' if request.endpoint == 'search_kb' }}">Search</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-list">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<script>
+  /* Drag-and-drop highlight for file input zones */
+  document.querySelectorAll(".drop-zone").forEach(zone => {
+    const input = zone.querySelector("input[type='file']");
+
+    /*
+     * Only open the file picker when the user clicks the zone background or
+     * its non-interactive children (icon, label text).
+     * Do NOT intercept clicks on the hidden <input> itself (that would cause
+     * a double-open loop) and, crucially, do NOT intercept submit buttons
+     * that sit outside the zone — their click events must reach the form.
+     */
+    zone.addEventListener("click", e => {
+      // If the click originated from the file input itself, ignore it —
+      // the browser already handles it.
+      if (e.target === input) return;
+      // Only open picker when clicking within the zone div (not on buttons
+      // outside it that might bubble through a shared ancestor).
+      if (!zone.contains(e.target)) return;
+      input.click();
+    });
+
+    zone.addEventListener("dragover", e => {
+      e.preventDefault();
+      zone.classList.add("dragover");
+    });
+
+    zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+
+    zone.addEventListener("drop", e => {
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      // DataTransfer.files is read-only; copy via a DataTransfer object
+      const dt = new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      updateFileLabel(zone, input);
+    });
+
+    input.addEventListener("change", () => updateFileLabel(zone, input));
+  });
+
+  function updateFileLabel(zone, input) {
+    const label = zone.querySelector(".file-label");
+    if (!label) return;
+    if (input.files.length === 0) {
+      label.textContent = "Click or drag files here";
+    } else if (input.files.length === 1) {
+      label.textContent = input.files[0].name;
+    } else {
+      label.textContent = `${input.files.length} files selected`;
+    }
+  }
+</script>
+
+</body>
+</html>
